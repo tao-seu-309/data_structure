@@ -13,10 +13,65 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 class QuickSort{
-    QuickSort();
-    ~QuickSort();
-    void shufftle(vector<int>&arr){}
-    void partition(){}
+public:
+    QuickSort(){};
+    ~QuickSort(){};
+void sort(vector<int>&arr,int low,int high){
+        if(low>=high)
+            return;
+        int pivot = partition(arr, low, high);//arr[pivot] is sorted 
+        sort(arr, low, pivot - 1);
+        sort(arr, pivot + 1, high);
+    }
+    int choose_middle(vector<int>&arr,int low,int high){
+        //randomly choose 3 nums and pick the middle
+		int len = (high - low)/3;//devide the section to 3 equally
+        if(len<=3)
+			return low;
+        mt19937_64 eng{random_device{}()};
+        uniform_int_distribution<int> dis(0, len);
+		int itr[3]={0,0,0},mini=-1,maxi=-1,sumi=0;
+        for(int i=0;i<3;++i){
+			itr[i]=low+dis(eng)+i*len;
+			sumi+=itr[i];
+			if(mini<0||arr[itr[i]]<arr[mini])
+				mini=itr[i];
+			else if(maxi<0||arr[itr[i]]>arr[maxi])
+				maxi=itr[i];
+		}
+        return sumi-mini-maxi;
+    }
+    int partition(vector<int>&arr,int low,int high){
+        // int piv =choose_middle(arr, low, high);//not need
+        // swap(arr[low], arr[piv]);
+        auto tmp = arr[low];
+        int left = low, rig = high;
+        while(left<rig){
+            while(left<rig&&arr[rig]>=tmp)
+                --rig;
+            arr[left] = arr[rig];
+			while(left<rig&&arr[left]<=tmp)//cution
+                ++left;
+            arr[rig] = arr[left];
+        }
+        arr[left] = tmp;
+        return left;
+    }
+    vector<int> sortArray(vector<int>& nums) {
+		auto shufftle=[](vector<int>&arr){
+			int len=arr.size();
+			mt19937_64 eng{random_device{}()};
+			for(int i=len-1;i>0;--i){
+				uniform_int_distribution<int>dis(0,i);
+				swap(arr[i],arr[dis(eng)]);
+			}
+			return;
+		};
+		shufftle(nums);//important
+		int len=nums.size()-1;
+		sort(nums,0,len);
+		return nums;
+    }
 };
 class MergeSort{
 public:
@@ -126,8 +181,14 @@ int main(){
     for(auto &x:test){
         x = dis(eng);
     }
+    int x = 6;
+    auto y= hash<int>()(x);
+    
     vector<int> test1 = {7, 6, 19, 1,12, 3, 0, 4, 14, 16, 8};
     MergeSort ms;
+    vector<int> test2 = {5,1,1,2,0,0};
+    QuickSort qs;
+    qs.sort(test2, 0, test2.size() - 1);
     ms.sort(test1);
     getchar();
     return 0;
