@@ -1,90 +1,102 @@
-#include<iostream>
 #include<vector>
-#include<string>
-#include<string.h>//memset
-#include<sstream>//istringstream
-#include<algorithm>
-#include<stack>
-#include<queue>
-#include<unordered_map>
-#include<bitset>
-#include<set>
-#include<unordered_set>
-#include<limits.h>
-#include<float.h>//DBL_MIN
-#include<random>
 using namespace std;
+// #include<algorithm>
+#include<iostream> 
 
-vector<vector<int>> history{};
-int cnt=0;
-void dfs(vector<vector<char>> &map,vector<pair<int, int>> &path,vector<vector<int>>&his,int i,int j){
-    if(map[i][j]=='x'||his[i][j]!=0)
-        return;
-    path.emplace_back(make_pair(i, j));
-    his[i][j] = 1;
-    if(map[i][j]=='O'){
-        int len = path.size();
-        for (int i = len - 1; i >= 0;i--){
-            int x = path[i].first, y = path[i].second;
-            map[x][y] = 'O'; 
-        }
-        path.pop_back();
-        his[i][j] = 0;
-        return;
+// write your code in C++ (C++14 (g++ 6.2.0))
+
+// int ans = 0;
+
+//
+int ans = 1;
+bool dfs(vector<vector<char>> &maze, vector<vector<int>> &visited, int i, int j, int m, int n) {
+    if(i<0 || i>=m || j<0 || j>=n) {    //碰到边
+        return 0;   
     }
-    // if(map[i][j]=='x'){//如何处理走不通
-    //     int len = path.size()-1;
-    //     for (int i = len - 1; i >= 0;i--){
-    //         int x = path[i].first, y = path[i].second;
-    //         if(map[x][y]=='U'||map[x][y]=='R'||map[x][y]=='D'||map[x][y]=='L'){
-    //             map[x][y] = 'x';
-    //             cnt++;
-    //         }
-    //         else
-    //             break;
-    //     }
-    //     path.pop_back();
-    //     his[i][j] = 0;
-    //     return;
-    // }
-    if(his[i-1][j]==0&&(map[i][j]=='U'||map[i][j]=='.'))//[i-1][j
-        if(map[i-1][j]!='x')
-            dfs(map, path,his, i - 1, j);
-    if(his[i+1][j]==0&&(map[i][j]=='D'||map[i][j]=='.'))//[i+1][j]
-        if(map[i+1][j]!='x')
-            dfs(map, path,his, i + 1, j);    
-    if(his[i][j+1]==0&&(map[i][j]=='R'||map[i][j]=='.'))//[i][j+1]
-        if(map[i][j+1]!='x')
-            dfs(map, path,his, i , j+1);
-    if(his[i][j-1]==0&&(map[i][j]=='L'||map[i][j]=='.'))//[i][j-1]
-        if(map[i][j-1]!='x')
-            dfs(map, path,his, i , j-1);  
-    path.pop_back();
-    his[i][j] = 0;
+    if(maze[i][j] == 'O') {      
+        return 1;
+    }
+    if(maze[i][j] == 'N') {             //碰到走不通的路
+        return 0;
+    }
+
+    if(visited[i][j] == 1) return 0;    //已经走过的路
+    if(visited[i][j] == 2) return 0;    //传送带
+     
+    
+   
+    bool res;
+    switch(maze[i][j]){
+        case '.':
+        visited[i][j] = 1;
+        res = dfs(maze, visited, i+1, j, m, n) || dfs(maze, visited, i-1, j, m, n)
+        || dfs(maze, visited, i, j+1, m, n) || dfs(maze, visited, i, j-1, m, n);
+        break;
+     
+        case 'R':
+        visited[i][j] = 2;
+        res = dfs(maze, visited, i, j+1, m, n);
+        break;
+
+        case 'L':
+        visited[i][j] = 2;
+        res = dfs(maze, visited, i, j-1, m, n);
+        break;
+
+        case 'U':
+        visited[i][j] = 2;
+        res = dfs(maze, visited, i-1, j, m, n);
+        break;
+
+        case 'D':
+        visited[i][j] = 2;
+        res = dfs(maze, visited, i+1, j, m, n);
+        break;
+
+        default:
+        res = 0;
+        break;
+    }
+    
+    visited[i][j] = 0;
+    // cout<<i<<"\t"<<j<<"\t"<<int(res)<<"\t";
+    if(res){                    //走的通的路标记为‘O’
+        maze[i][j] = 'O';
+        return 1;
+    }else if(maze[i][j]!='.'){  //走不通的路标记为‘N’,                          
+        maze[i][j] = 'N';       //res==0的时候如果是在‘.’上不能判定走不通，因为实际情况可以往回走
+        ans++;
+        cout<<ans<<endl;
+        return 0;
+    }
+
+    // return 0;
+
 }
+
 int main(){
-    int a=5, b=5;
-    history.resize(a + 2, vector<int>(b + 2, 0));
-    vector<vector<char>> map(a+2, vector<char>(b+2,'x'));
-    vector<pair<int, int>> path{};//记录路径
-    vector<vector<char>> map0 = {{'x','x','x','x','x','x','x'},
-                                 {'x','.','.','.','.','.','x'},
-                                 {'x','.','R','R','D','.','x'},
-                                 {'x','.','U','.','D','R','x'},
-                                 {'x','.','U','L','L','.','x'},
-                                 {'x','.','.','.','.','O','x'},
-                                 {'x','x','x','x','x','x','x'}};
-    // dfs(map,path,beginx,beginy);
-    for (int i = 1; i <= a;++i)
-        for (int j = 1; j <= b;++j)
-            dfs(map0, path, history, i, j);
-    int res = 0;
-    for (int i = 1; i <= a;++i)
-        for (int j = 1; j <= b;++j)
-            if(map0[i][j]=='O')
-                ++res;
-    res = a * b - res;
-    cout << res;
-    getchar();
+    // int m, n;
+    // cin>>m>>n;
+    // vector<vector<int>> maze(m,n);
+
+    //测试用例
+    int m = 5, n = 5;
+    vector<vector<char>> maze = {{'.', '.', '.', '.', '.'},
+                                 {'.', 'R', 'R', 'D', '.'},
+                                 {'.', 'U', '.', 'D', 'R'},
+                                 {'.', 'U', 'L', 'L', '.'},
+                                 {'.', '.', '.', '.', 'O'}};
+
+    maze[m-1][n-1] = 'O';
+    vector<vector<int>> visited(m, vector<int>(n,0));
+    for(int i=0; i<m; i++){
+        for(int j=0; j<n; j++){
+            if(maze[i][j] != 'O' && maze[i][j]!='N'){     
+                dfs(maze, visited, i, j, m, n);
+            }           
+        }
+    }
+
+    cout << ans<< endl;
     return 0;
 }
